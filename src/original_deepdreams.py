@@ -1,13 +1,14 @@
 # FROM: https://github.com/google/deepdream/blob/master/dream.ipynb
+# Slightly modified to find file paths and such
 
 # imports and basic notebook setup
 from cStringIO import StringIO
 import numpy as np
 import scipy.ndimage as nd
 import PIL.Image
-from IPython.display import clear_output, Image, display
 from google.protobuf import text_format
-
+import matplotlib.pyplot as plt
+import os
 import caffe
 
 # If your GPU supports CUDA and Caffe was built with CUDA support,
@@ -18,21 +19,25 @@ import caffe
 def showarray(a, fmt='jpeg'):
     a = np.uint8(np.clip(a, 0, 255))
     f = StringIO()
-    PIL.Image.fromarray(a).save(f, fmt)
-    display(Image(data=f.getvalue()))
+    img = PIL.Image.fromarray(a)
+    # show on each update
+    # PIL.Image.fromarray(a).save(f, fmt)
+    # Image(data=f.getvalue()).show()
 
-model_path = '../caffe/models/bvlc_googlenet/' # substitute your path here
-net_fn   = model_path + 'deploy.prototxt'
-param_fn = model_path + 'bvlc_googlenet.caffemodel'
+caffe_path = os.path.abspath(os.path.join(os.path.join(os.path.join(caffe.__file__, os.pardir), os.pardir), os.pardir))
+model_path = os.path.join(caffe_path, 'models/bvlc_googlenet/')
+net_fn   = os.path.join(model_path, 'deploy.prototxt')
+param_fn = os.path.join(model_path, 'bvlc_googlenet.caffemodel')
+tmp_file = '../tmp/tmp.prototxt'
 
 # Patching model to be able to compute gradients.
 # Note that you can also manually add "force_backward: true" line to "deploy.prototxt".
 model = caffe.io.caffe_pb2.NetParameter()
 text_format.Merge(open(net_fn).read(), model)
 model.force_backward = True
-open('tmp.prototxt', 'w').write(str(model))
+open(tmp_file, 'w').write(str(model))
 
-net = caffe.Classifier('tmp.prototxt', param_fn,
+net = caffe.Classifier(tmp_file, param_fn,
                        mean = np.float32([104.0, 116.0, 122.0]), # ImageNet mean, training set dependent
                        channel_swap = (2,1,0)) # the reference model has channels in BGR order instead of RGB
 
@@ -95,14 +100,19 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
                 vis = vis*(255.0/np.percentile(vis, 99.98))
             showarray(vis)
             print octave, i, end, vis.shape
-            clear_output(wait=True)
 
         # extract details produced on the current octave
         detail = src.data[0]-octave_base
     # returning the resulting image
     return deprocess(net, src.data[0])
 
-img = np.float32(PIL.Image.open('sky1024px.jpg'))
+img = np.float32(PIL.Image.open('../data/img/sky1024px.jpg'))
 showarray(img)
 
-_=deepdream(net, img)
+output = deepdream(net, img)
+
+output_file = '../output/sky.jpg'
+a = np.uint8(np.clip(output, 0, 255))
+img = PIL.Image.fromarray(a)
+with open('../output/sky.jpeg', 'wb') as f:
+    img.save(f, 'jpeg')
