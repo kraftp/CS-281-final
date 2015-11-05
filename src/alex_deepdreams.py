@@ -25,9 +25,9 @@ def showarray(a, fmt='jpeg'):
     # Image(data=f.getvalue()).show()
 
 caffe_path = os.path.abspath(os.path.join(os.path.join(os.path.join(caffe.__file__, os.pardir), os.pardir), os.pardir))
-model_path = os.path.join(caffe_path, 'models/bvlc_googlenet/')
+model_path = os.path.join(caffe_path, 'models/bvlc_alexnet/')
 net_fn   = os.path.join(model_path, 'deploy.prototxt')
-param_fn = os.path.join(model_path, 'bvlc_googlenet.caffemodel')
+param_fn = os.path.join(model_path, 'bvlc_alexnet.caffemodel')
 tmp_file = '../tmp/tmp.prototxt'
 
 # Patching model to be able to compute gradients.
@@ -50,7 +50,7 @@ def deprocess(net, img):
 def objective_L2(dst):
     dst.diff[:] = dst.data
 
-def make_step(net, step_size=1.5, end='inception_4c/output',
+def make_step(net, step_size=1.5, end='conv5',
               jitter=32, clip=True, objective=objective_L2):
     '''Basic gradient ascent step.'''
 
@@ -74,11 +74,13 @@ def make_step(net, step_size=1.5, end='inception_4c/output',
         src.data[:] = np.clip(src.data, -bias, 255-bias)
 
 def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
-              end='inception_4c/output', clip=True, **step_params):
+              end='conv5', clip=True, **step_params):
     # prepare base images for all octaves
     octaves = [preprocess(net, base_img)]
     for i in xrange(octave_n-1):
         octaves.append(nd.zoom(octaves[-1], (1, 1.0/octave_scale,1.0/octave_scale), order=1))
+
+    import pdb; pdb.set_trace()
 
     src = net.blobs['data']
     detail = np.zeros_like(octaves[-1]) # allocate image for network-produced details
@@ -106,12 +108,12 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
     # returning the resulting image
     return deprocess(net, src.data[0])
 
-img = np.float32(PIL.Image.open('../data/img/m.jpg'))
+img = np.float32(PIL.Image.open('../data/img/berg.jpg'))
 showarray(img)
 
-output = deepdream(net, img, octave_n=6, iter_n=10)
+output = deepdream(net, img, octave_n=6, iter_n=20)
 
-output_file = '../output/m.jpg'
+output_file = '../output/berg.jpg'
 a = np.uint8(np.clip(output, 0, 255))
 img = PIL.Image.fromarray(a)
 with open(output_file, 'wb') as f:
