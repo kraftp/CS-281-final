@@ -1,0 +1,20 @@
+net: "simple.prototxt"
+
+display: 1
+max_iter: 200
+test_iter: 20
+test_interval: 100
+
+base_lr: 0.000001
+momentum: 0.9
+# weight_decay: 0.0005
+
+lr_policy: "inv"
+# gamma: 0.5
+# stepsize: 10
+# power: 0.75
+
+solver_mode: CPU
+solver_type: SGD
+
+debug_info: true
