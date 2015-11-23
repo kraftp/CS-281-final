@@ -1,6 +1,11 @@
 .DS_Store
 tmp/
 output/
+*.config
+*.jpg
+*.caffemodel
+*.solverstate
+*.mdb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,17 @@
+net: "./train_val.prototxt"
+test_iter: 10
+test_interval: 100
+test_initialization: false
+display: 5
+average_loss: 40
+# probably should be MUCH lower
+base_lr: 0.02
+lr_policy: "poly"
+power: 0.5
+# probably should be MUCH higher
+max_iter: 1000
+momentum: 0.9
+weight_decay: 0.0002
+snapshot: 40000
+snapshot_prefix: ""
+solver_mode: CPU

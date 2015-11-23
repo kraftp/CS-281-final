@@ -1,6 +1,3 @@
-# FROM: https://github.com/google/deepdream/blob/master/dream.ipynb
-# Slightly modified to find file paths and such
-
 # imports and basic notebook setup
 from cStringIO import StringIO
 import numpy as np
@@ -25,9 +22,9 @@ def showarray(a, fmt='jpeg'):
     # Image(data=f.getvalue()).show()
 
 caffe_path = os.path.abspath(os.path.join(os.path.join(os.path.join(caffe.__file__, os.pardir), os.pardir), os.pardir))
-model_path = os.path.join(caffe_path, 'models/bvlc_alexnet/')
+model_path = '../data/flickr/'
 net_fn   = os.path.join(model_path, 'deploy.prototxt')
-param_fn = os.path.join(model_path, 'bvlc_alexnet.caffemodel')
+param_fn = os.path.join(model_path, '_iter_1000.caffemodel')
 tmp_file = '../tmp/tmp.prototxt'
 
 # Patching model to be able to compute gradients.
@@ -48,9 +45,9 @@ def deprocess(net, img):
     return np.dstack((img + net.transformer.mean['data'])[::-1])
 
 def objective_L2(dst):
-    dst.diff[:] = dst.data
+    dst.diff[:] = -dst.data
 
-def make_step(net, step_size=1.5, end='pool5',
+def make_step(net, step_size=1.5, end='inception_3a/output',
               jitter=32, clip=True, objective=objective_L2):
     '''Basic gradient ascent step.'''
 
@@ -74,7 +71,11 @@ def make_step(net, step_size=1.5, end='pool5',
         src.data[:] = np.clip(src.data, -bias, 255-bias)
 
 def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
-              end='pool5', clip=True, **step_params):
+              end='inception_3a/output', clip=True, **step_params):
+
+    # FYI
+    print net.blobs.keys()
+
     # prepare base images for all octaves
     octaves = [preprocess(net, base_img)]
     for i in xrange(octave_n-1):
