@@ -1,6 +1,7 @@
 .DS_Store
 tmp/
 output/
+data/split
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
