@@ -2,6 +2,11 @@
 tmp/
 output/
 data/split
+*.config
+*.jpg
+*.caffemodel
+*.solverstate
+*.mdb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
