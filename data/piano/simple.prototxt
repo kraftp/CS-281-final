@@ -1,0 +1,44 @@
+name: "simple"
+
+
+layer {
+    name: "Expt_Data_Train"
+    type: "MemoryData"
+    top: "data"
+    top: "label"
+    memory_data_param {
+        batch_size: 374
+        channels: 1
+        height: 10000
+        width: 1
+    }
+}
+
+
+layer {
+    name: "IP"
+    type: "InnerProduct"
+    bottom: "data"
+    top: "ip"
+
+    inner_product_param {
+        num_output: 1
+
+        weight_filler {
+            type: 'constant'
+        }
+
+        bias_filler {
+            type: 'constant'
+        }
+    }
+}
+
+
+layer {
+    name: "Loss"
+    type: "EuclideanLoss"
+    bottom: "ip"
+    bottom: "label"
+    top: "loss"
+}
