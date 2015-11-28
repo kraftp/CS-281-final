@@ -140,7 +140,7 @@ layer {
     lr_mult: 2
   }
   inner_product_param {
-    num_output: 10
+    num_output: 1
     weight_filler {
       type: "xavier"
     }
@@ -150,9 +150,15 @@ layer {
   }
 }
 layer {
+  name: "sigmoid"
+  bottom: "ip2"
+  top: "sigmoid"
+  type: "Sigmoid"
+}
+layer {
   name: "accuracy"
   type: "Accuracy"
-  bottom: "ip2"
+  bottom: "sigmoid"
   bottom: "label"
   top: "accuracy"
   include {
@@ -161,8 +167,8 @@ layer {
 }
 layer {
   name: "loss"
-  type: "SoftmaxWithLoss"
-  bottom: "ip2"
+  type: "EuclideanLoss"
+  bottom: "sigmoid"
   bottom: "label"
   top: "loss"
 }
