@@ -2,13 +2,12 @@ import wave
 import struct
 import numpy as np
 import os
-import caffe
 import matplotlib.pyplot as plt
 
 
 numwav = len([f for f in os.listdir('splitwav') if '.wav' in f]) #must match batch_size in neural net prototxt
 
-LENWAV = 10000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
+LENWAV = 5*40000/4 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
 DIR = 'splitwav'
 
@@ -29,6 +28,6 @@ for newFile in np.random.permutation(os.listdir(DIR)):
                 sound = struct.unpack("<h", waveData)
                 data[count,0,i/SAMPLEFACTOR,0] = sound[0]
         print len(data[count,0,:,0])
-        plt.scatter(range(0, 10000), data[count,0,:,0])
+        plt.scatter(range(0, LENWAV), data[count,0,:,0])
         plt.show()
     count += 1
