@@ -30,96 +30,107 @@ layer {
       phase: TEST
     }
 }
-
+layer {
+    name: "whiten"
+    type: "Pooling"
+    bottom: "data"
+    top: "white"
+    pooling_param {
+      pool: MAX
+      kernel_h: 200
+      kernel_w: 1
+      stride: 2
+    }
+}
 layer {
   name: "conv1"
   type: "Convolution"
-  bottom: "data"
+  bottom: "white"
   top: "conv1"
-  param {
-    lr_mult: 1
-  }
-  param {
-    lr_mult: 2
-  }
   convolution_param {
-    num_output: 20
+    num_output: 32
     kernel_w: 1
-    kernel_h: 5
+    kernel_h: 200
     stride: 1
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-    }
   }
 }
 layer {
-  name: "pool1"
-  type: "Pooling"
+  name: "reluc1"
+  type: "ReLU"
   bottom: "conv1"
-  top: "pool1"
-  pooling_param {
-    pool: MAX
-    kernel_size: 2
-    stride: 2
-  }
+  top: "conv1"
+}
+layer {
+    name: "pool1"
+    type: "Pooling"
+    bottom: "conv1"
+    top: "pool1"
+    pooling_param {
+      pool: MAX
+      kernel_h: 3
+      kernel_w: 1
+      stride: 2
+    }
+}
+layer {
+    name: "norm1"
+    type: "LRN"
+    bottom: "pool1"
+    top: "norm1"
+    lrn_param {
+      local_size: 5
+      alpha: 0.0001
+      beta: 0.75
+    }
 }
 layer {
   name: "conv2"
   type: "Convolution"
-  bottom: "pool1"
+  bottom: "norm1"
   top: "conv2"
-  param {
-    lr_mult: 1
-  }
-  param {
-    lr_mult: 2
-  }
   convolution_param {
-    num_output: 50
-    kernel_h: 5
+    num_output: 64
     kernel_w: 1
+    kernel_h: 100
     stride: 1
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-    }
   }
 }
 layer {
-  name: "pool2"
-  type: "Pooling"
+  name: "reluc2"
+  type: "ReLU"
   bottom: "conv2"
-  top: "pool2"
-  pooling_param {
-    pool: MAX
-    kernel_size: 2
-    stride: 2
-  }
+  top: "conv2"
+}
+layer {
+    name: "norm2"
+    type: "LRN"
+    bottom: "conv2"
+    top: "norm2"
+    lrn_param {
+      local_size: 5
+      alpha: 0.0001
+      beta: 0.75
+    }
+}
+layer {
+    name: "pool2"
+    type: "Pooling"
+    bottom: "norm2"
+    top: "pool2"
+    pooling_param {
+      pool: MAX
+      kernel_h: 3
+      kernel_w: 1
+      stride: 2
+    }
 }
 layer {
   name: "ip1"
   type: "InnerProduct"
   bottom: "pool2"
   top: "ip1"
-  param {
-    lr_mult: 1
-  }
-  param {
-    lr_mult: 2
-  }
   inner_product_param {
-    num_output: 500
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-    }
+    num_output: 200
   }
 }
 layer {
@@ -133,42 +144,36 @@ layer {
   type: "InnerProduct"
   bottom: "ip1"
   top: "ip2"
-  param {
-    lr_mult: 1
-  }
-  param {
-    lr_mult: 2
-  }
   inner_product_param {
-    num_output: 1
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-    }
+    num_output: 200
   }
 }
 layer {
-  name: "sigmoid"
+  name: "relu2"
+  type: "ReLU"
   bottom: "ip2"
-  top: "sigmoid"
-  type: "Sigmoid"
+  top: "ip2"
 }
 layer {
-  name: "accuracy"
-  type: "Accuracy"
-  bottom: "sigmoid"
-  bottom: "label"
-  top: "accuracy"
-  include {
-    phase: TEST
+  name: "classes"
+  type: "InnerProduct"
+  bottom: "ip2"
+  top: "classes"
+  inner_product_param {
+    num_output: 2
   }
 }
 layer {
   name: "loss"
-  type: "EuclideanLoss"
-  bottom: "sigmoid"
+  type: "SoftmaxWithLoss"
+  bottom: "classes"
   bottom: "label"
   top: "loss"
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "classes"
+  bottom: "label"
+  top: "accuracy"
 }

@@ -1,14 +1,14 @@
-net: "simpler.prototxt"
+net: "simple.prototxt"
 
 display: 1
-max_iter: 20000
+max_iter: 10000
 test_iter: 50
 test_interval: 1000
 
 snapshot: 1000
 snapshot_prefix: "."
 
-base_lr: 0.0000001
+base_lr: 0.000001
 momentum: 0.9
 #weight_decay: 0.00005
 
