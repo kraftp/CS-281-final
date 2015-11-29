@@ -90,6 +90,7 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
             h1, w1 = detail.shape[-2:]
             detail = nd.zoom(detail, (1, 1.0*h/h1,1.0*w/w1), order=1)
 
+        import pdb; pdb.set_trace()
         src.reshape(1,3,h,w) # resize the network's input image size
         src.data[0] = octave_base+detail
         for i in xrange(iter_n):

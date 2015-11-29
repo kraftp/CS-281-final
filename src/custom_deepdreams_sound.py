@@ -9,6 +9,7 @@ import os
 import caffe
 import wave
 import struct
+from scipy.io.wavfile import write as wavwrite
 
 # If your GPU supports CUDA and Caffe was built with CUDA support,
 # uncomment the following to run Caffe operations on the GPU.
@@ -18,7 +19,7 @@ import struct
 def showarray(a, fmt='jpeg'):
     a = np.uint8(np.clip(a, 0, 255))
     f = StringIO()
-    img = PIL.Image.fromarray(a)
+    #img = PIL.Image.fromarray(a)
     # show on each update
     # PIL.Image.fromarray(a).save(f, fmt)
     # Image(data=f.getvalue()).show()
@@ -36,9 +37,10 @@ text_format.Merge(open(net_fn).read(), model)
 model.force_backward = True
 open(tmp_file, 'w').write(str(model))
 
+# TODO : CHANGE THE MEAN
 net = caffe.Classifier(tmp_file, param_fn,
-                       mean = np.float32([104.0, 116.0, 122.0]), # ImageNet mean, training set dependent
-                       channel_swap = (2,1,0)) # the reference model has channels in BGR order instead of RGB
+                       mean = np.float32([0]),
+                       channel_swap = (0,)) # the reference model has channels in BGR order instead of RGB
 
 # a couple of utility functions for converting to and from Caffe's input image layout
 def preprocess(net, img):
@@ -57,16 +59,30 @@ def make_step(net, step_size=1.5, end='conv5',
     dst = net.blobs[end]
 
     ox, oy = np.random.randint(-jitter, jitter+1, 2)
-    src.data[0] = np.roll(np.roll(src.data[0], ox, -1), oy, -2) # apply jitter shift
+    src.data[0] = np.roll(src.data[0], ox, -1)
+
+    print "BLERP"
 
     net.forward(end=end)
+
+    print "DERP"
+
     objective(dst)  # specify the optimization objective
+
+    print "RERP"
+
     net.backward(start=end)
+
+    print "MERP"
+
     g = src.diff[0]
+
+    print "GLERP"
+
     # apply normalized ascent step to the input image
     src.data[:] += step_size/np.abs(g).mean() * g
 
-    src.data[0] = np.roll(np.roll(src.data[0], -ox, -1), -oy, -2) # unshift image
+    src.data[0] = np.roll(src.data[0], -ox, -1)
 
     if clip:
         bias = net.transformer.mean['data']
@@ -92,7 +108,8 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
             h1, w1 = detail.shape[-2:]
             detail = nd.zoom(detail, (1, 1.0*h/h1,1.0*w/w1), order=1)
 
-        src.reshape(1,3,h,w) # resize the network's input image size
+        import pdb; pdb.set_trace()
+        src.reshape(1,1,h,w) # resize the network's input image size
         src.data[0] = octave_base+detail
         for i in xrange(iter_n):
             make_step(net, end=end, clip=clip, **step_params)
@@ -111,22 +128,17 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
 
 LENWAV = 10000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
-img = np.zeros((1, 1, LENWAV, 1), dtype=int)
+img = np.zeros((1, LENWAV, 1), dtype=int)
 
-waveFile = wave.open('../data/img/test.wav', 'rb')
+waveFile = wave.open('../data/piano/splitwav/class1-1a.wav', 'rb')
 for i in range(0, LENWAV * SAMPLEFACTOR):
     waveData = waveFile.readframes(1)
     if i % SAMPLEFACTOR == 0:
         sound = struct.unpack("<h", waveData)
-        img[0,0,i/SAMPLEFACTOR,0] = sound[0]
-
+        img[0, i/SAMPLEFACTOR,0] = sound[0]
 
 showarray(img)
 
 output = deepdream(net, img, octave_n=4, iter_n=20)
 
-output_file = '../output/dog_164.jpg'
-a = np.uint8(output)
-img = PIL.Image.fromarray(a)
-with open(output_file, 'wb') as f:
-    img.save(f, 'jpeg')
+wavwrite('../output/test.wav', waveFile.getframerate() / SAMPLEFACTOR, output / float(np.max(np.abs(output),axis=0)))
