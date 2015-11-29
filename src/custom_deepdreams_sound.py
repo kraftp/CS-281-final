@@ -7,6 +7,8 @@ from google.protobuf import text_format
 import matplotlib.pyplot as plt
 import os
 import caffe
+import wave
+import struct
 
 # If your GPU supports CUDA and Caffe was built with CUDA support,
 # uncomment the following to run Caffe operations on the GPU.
@@ -22,9 +24,9 @@ def showarray(a, fmt='jpeg'):
     # Image(data=f.getvalue()).show()
 
 caffe_path = os.path.abspath(os.path.join(os.path.join(os.path.join(caffe.__file__, os.pardir), os.pardir), os.pardir))
-model_path = '../data/flickr/'
+model_path = '.'
 net_fn   = os.path.join(model_path, 'deploy.prototxt')
-param_fn = os.path.join(model_path, '_iter_1000.caffemodel')
+param_fn = os.path.join(model_path, '._iter_1000.caffemodel')
 tmp_file = '../tmp/tmp.prototxt'
 
 # Patching model to be able to compute gradients.
@@ -47,7 +49,7 @@ def deprocess(net, img):
 def objective_L2(dst):
     dst.diff[:] = dst.data
 
-def make_step(net, step_size=1.5, end='inception_3a/output',
+def make_step(net, step_size=1.5, end='conv5',
               jitter=32, clip=True, objective=objective_L2):
     '''Basic gradient ascent step.'''
 
@@ -71,7 +73,7 @@ def make_step(net, step_size=1.5, end='inception_3a/output',
         src.data[:] = np.clip(src.data, -bias, 255-bias)
 
 def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
-              end='inception_3a/output', clip=True, **step_params):
+              end='conv5', clip=True, **step_params):
 
     # FYI
     print net.blobs.keys()
@@ -107,13 +109,24 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
     # returning the resulting image
     return deprocess(net, src.data[0])
 
-img = np.float32(PIL.Image.open('../data/img/dog_164.jpg'))
+LENWAV = 10000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
+SAMPLEFACTOR = 4
+img = np.zeros((1, 1, LENWAV, 1), dtype=int)
+
+waveFile = wave.open('../data/img/test.wav', 'rb')
+for i in range(0, LENWAV * SAMPLEFACTOR):
+    waveData = waveFile.readframes(1)
+    if i % SAMPLEFACTOR == 0:
+        sound = struct.unpack("<h", waveData)
+        img[0,0,i/SAMPLEFACTOR,0] = sound[0]
+
+
 showarray(img)
 
 output = deepdream(net, img, octave_n=4, iter_n=20)
 
 output_file = '../output/dog_164.jpg'
-a = np.uint8(np.clip(output, 0, 255))
+a = np.uint8(output)
 img = PIL.Image.fromarray(a)
 with open(output_file, 'wb') as f:
     img.save(f, 'jpeg')

@@ -1,4 +1,4 @@
-net: "simpler.prototxt"
+net: "conv_simple.prototxt"
 
 display: 1
 max_iter: 20000
@@ -8,7 +8,7 @@ test_interval: 1000
 snapshot: 1000
 snapshot_prefix: "."
 
-base_lr: 0.0000001
+base_lr: 0.01
 momentum: 0.9
 #weight_decay: 0.00005
 
