@@ -8,7 +8,7 @@ import lmdb
 
 numwav = len([f for f in os.listdir('splitwav') if '.wav' in f]) #must match batch_size in neural net prototxt
 
-LENWAV = 5*40000/4 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
+LENWAV = 2*40000/4 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
 DIR = 'splitwav'
 
@@ -37,12 +37,17 @@ for newFile in np.random.permutation(os.listdir(DIR)):
 # transaction.
 map_size = data.nbytes * 10
 
-env = lmdb.open('../piano_lmdb', map_size=map_size)
+env = lmdb.open('../piano_train_lmdb', map_size=map_size)
+env2 = lmdb.open('../piano_test_lmdb', map_size=map_size)
 with env.begin(write=True) as txn:
-    # txn is a Transaction object
-    for i in range(len(data)):
-        datum = caffe.io.array_to_datum(data[i])
-        datum.label = labels[i]
-        str_id = '{:08}'.format(i)
-        # The encode is only essential in Python 3
-        txn.put(str_id.encode('ascii'), datum.SerializeToString())
+    with env2.begin(write=True) as txn2:
+        # txn is a Transaction object
+        for i in range(len(data)):
+            datum = caffe.io.array_to_datum(data[i])
+            datum.label = labels[i]
+            str_id = '{:08}'.format(i)
+            # The encode is only essential in Python 3
+            if np.random.randint(1,10) != 1:
+                txn.put(str_id.encode('ascii'), datum.SerializeToString())
+            else:
+                txn2.put(str_id.encode('ascii'), datum.SerializeToString())
