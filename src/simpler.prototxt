@@ -36,7 +36,10 @@ layer {
   bottom: "data"
   top: "ip1"
   inner_product_param {
-    num_output: 10000
+    num_output: 1000
+    weight_filler {
+      type: "xavier"
+    }
   }
 }
 layer {
@@ -51,7 +54,10 @@ layer {
   bottom: "ip1"
   top: "ip2"
   inner_product_param {
-    num_output: 10000
+    num_output: 1000
+    weight_filler {
+      type: "xavier"
+    }
   }
 }
 layer {
@@ -66,7 +72,10 @@ layer {
   bottom: "ip2"
   top: "ip3"
   inner_product_param {
-    num_output: 10000
+    num_output: 1000
+    weight_filler {
+      type: "xavier"
+    }
   }
 }
 layer {
@@ -81,7 +90,10 @@ layer {
   bottom: "ip3"
   top: "ip4"
   inner_product_param {
-    num_output: 1000
+    num_output: 100
+    weight_filler {
+      type: "xavier"
+    }
   }
 }
 layer {
@@ -97,6 +109,9 @@ layer {
   top: "fc2"
   inner_product_param {
     num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
   }
 }
 layer {

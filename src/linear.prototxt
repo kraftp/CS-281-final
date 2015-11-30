@@ -42,8 +42,7 @@ layer {
   inner_product_param {
     num_output: 2000
     weight_filler {
-      type: "gaussian"
-      std: 2
+      type: "xavier"
     }
   }
 }
@@ -61,8 +60,7 @@ layer {
   inner_product_param {
     num_output: 2
     weight_filler {
-      type: "gaussian"
-      std: 2
+      type: "xavier"
     }
   }
 }

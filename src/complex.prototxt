@@ -1,4 +1,4 @@
-name: "simple"
+name: "complex"
 
 
 layer {
@@ -31,12 +31,24 @@ layer {
     }
 }
 layer {
+    name: "whiten"
+    type: "Pooling"
+    bottom: "data"
+    top: "white"
+    pooling_param {
+      pool: MAX
+      kernel_h: 200
+      kernel_w: 1
+      stride: 2
+    }
+}
+layer {
   name: "conv1"
   type: "Convolution"
-  bottom: "data"
+  bottom: "white"
   top: "conv1"
   convolution_param {
-    num_output: 8
+    num_output: 32
     kernel_w: 1
     kernel_h: 200
     stride: 1
@@ -52,9 +64,76 @@ layer {
   top: "conv1"
 }
 layer {
+    name: "pool1"
+    type: "Pooling"
+    bottom: "conv1"
+    top: "pool1"
+    pooling_param {
+      pool: MAX
+      kernel_h: 3
+      kernel_w: 1
+      stride: 2
+    }
+}
+layer {
+    name: "norm1"
+    type: "LRN"
+    bottom: "pool1"
+    top: "norm1"
+    lrn_param {
+      local_size: 5
+      alpha: 0.0001
+      beta: 0.75
+    }
+}
+layer {
+  name: "conv2"
+  type: "Convolution"
+  bottom: "norm1"
+  top: "conv2"
+  convolution_param {
+    num_output: 64
+    kernel_w: 1
+    kernel_h: 100
+    stride: 1
+    weight_filler {
+      type: "xavier"
+    }
+  }
+}
+layer {
+  name: "reluc2"
+  type: "ReLU"
+  bottom: "conv2"
+  top: "conv2"
+}
+layer {
+    name: "norm2"
+    type: "LRN"
+    bottom: "conv2"
+    top: "norm2"
+    lrn_param {
+      local_size: 5
+      alpha: 0.0001
+      beta: 0.75
+    }
+}
+layer {
+    name: "pool2"
+    type: "Pooling"
+    bottom: "norm2"
+    top: "pool2"
+    pooling_param {
+      pool: MAX
+      kernel_h: 3
+      kernel_w: 1
+      stride: 2
+    }
+}
+layer {
   name: "ip1"
   type: "InnerProduct"
-  bottom: "conv1"
+  bottom: "pool2"
   top: "ip1"
   inner_product_param {
     num_output: 200
