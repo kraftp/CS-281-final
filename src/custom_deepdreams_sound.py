@@ -27,7 +27,7 @@ def showarray(a, fmt='jpeg'):
 caffe_path = os.path.abspath(os.path.join(os.path.join(os.path.join(caffe.__file__, os.pardir), os.pardir), os.pardir))
 model_path = '.'
 net_fn   = os.path.join(model_path, 'deploy.prototxt')
-param_fn = os.path.join(model_path, '._iter_1000.caffemodel')
+param_fn = os.path.join(model_path, '._iter_1007.caffemodel')
 tmp_file = '../tmp/tmp.prototxt'
 
 # Patching model to be able to compute gradients.
@@ -61,23 +61,10 @@ def make_step(net, step_size=1.5, end='conv5',
     ox, oy = np.random.randint(-jitter, jitter+1, 2)
     src.data[0] = np.roll(src.data[0], ox, -1)
 
-    print "BLERP"
-
     net.forward(end=end)
-
-    print "DERP"
-
     objective(dst)  # specify the optimization objective
-
-    print "RERP"
-
     net.backward(start=end)
-
-    print "MERP"
-
     g = src.diff[0]
-
-    print "GLERP"
 
     # apply normalized ascent step to the input image
     src.data[:] += step_size/np.abs(g).mean() * g
@@ -108,7 +95,6 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
             h1, w1 = detail.shape[-2:]
             detail = nd.zoom(detail, (1, 1.0*h/h1,1.0*w/w1), order=1)
 
-        import pdb; pdb.set_trace()
         src.reshape(1,1,h,w) # resize the network's input image size
         src.data[0] = octave_base+detail
         for i in xrange(iter_n):
@@ -128,17 +114,17 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
 
 LENWAV = 10000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
-img = np.zeros((1, LENWAV, 1), dtype=int)
+img = np.zeros((LENWAV, 1, 1), dtype=int)
 
 waveFile = wave.open('../data/piano/splitwav/class1-1a.wav', 'rb')
 for i in range(0, LENWAV * SAMPLEFACTOR):
     waveData = waveFile.readframes(1)
     if i % SAMPLEFACTOR == 0:
         sound = struct.unpack("<h", waveData)
-        img[0, i/SAMPLEFACTOR,0] = sound[0]
+        img[i/SAMPLEFACTOR, 0, 0] = sound[0]
 
 showarray(img)
 
-output = deepdream(net, img, octave_n=4, iter_n=20)
+output = deepdream(net, img, octave_n=4, iter_n=100)
 
 wavwrite('../output/test.wav', waveFile.getframerate() / SAMPLEFACTOR, output / float(np.max(np.abs(output),axis=0)))
