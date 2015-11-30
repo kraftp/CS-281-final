@@ -7,12 +7,15 @@ layer {
     top: "data"
     top: "label"
     data_param {
-      source: "../data/piano_lmdb"
-      batch_size: 64
+      source: "../data/piano_train_lmdb"
+      batch_size: 8
       backend: LMDB
     }
     include {
       phase: TRAIN
+    }
+    transform_param {
+      scale: 0.00001
     }
 }
 
@@ -22,12 +25,15 @@ layer {
     top: "data"
     top: "label"
     data_param {
-      source: "./../data/piano_lmdb"
+      source: "./../data/piano_test_lmdb"
       batch_size: 64
       backend: LMDB
     }
     include {
       phase: TEST
+    }
+    transform_param {
+      scale: 0.00001
     }
 }
 layer {
@@ -36,12 +42,13 @@ layer {
   bottom: "data"
   top: "conv1"
   convolution_param {
-    num_output: 8
+    num_output: 64
     kernel_w: 1
     kernel_h: 200
     stride: 1
     weight_filler {
       type: "xavier"
+      std: 1
     }
   }
 }
@@ -60,6 +67,7 @@ layer {
     num_output: 200
     weight_filler {
       type: "xavier"
+      std: 1
     }
   }
 }
@@ -78,6 +86,7 @@ layer {
     num_output: 200
     weight_filler {
       type: "xavier"
+      std: 1
     }
   }
 }
@@ -96,6 +105,7 @@ layer {
     num_output: 2
     weight_filler {
       type: "xavier"
+      std: 1
     }
   }
 }
