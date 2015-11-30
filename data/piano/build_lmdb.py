@@ -8,7 +8,7 @@ import lmdb
 
 numwav = len([f for f in os.listdir('splitwav') if '.wav' in f]) #must match batch_size in neural net prototxt
 
-LENWAV = 10000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
+LENWAV = 5*40000/4 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
 DIR = 'splitwav'
 
