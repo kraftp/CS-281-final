@@ -27,8 +27,8 @@ def showarray(a, fmt='jpeg'):
 caffe_path = os.path.abspath(os.path.join(os.path.join(os.path.join(caffe.__file__, os.pardir), os.pardir), os.pardir))
 model_path = '.'
 net_fn   = os.path.join(model_path, 'deploy.prototxt')
-param_fn = os.path.join(model_path, '._iter_1007.caffemodel')
-tmp_file = '../tmp/tmp.prototxt'
+param_fn = os.path.join(model_path, '._iter_128.caffemodel')
+tmp_file = 'tmp.prototxt'
 
 # Patching model to be able to compute gradients.
 # Note that you can also manually add "force_backward: true" line to "deploy.prototxt".
@@ -51,7 +51,7 @@ def deprocess(net, img):
 def objective_L2(dst):
     dst.diff[:] = dst.data
 
-def make_step(net, step_size=1.5, end='conv5',
+def make_step(net, step_size=1.5, end='conv1',
               jitter=32, clip=True, objective=objective_L2):
     '''Basic gradient ascent step.'''
 
@@ -76,7 +76,7 @@ def make_step(net, step_size=1.5, end='conv5',
         src.data[:] = np.clip(src.data, -bias, 255-bias)
 
 def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
-              end='conv5', clip=True, **step_params):
+              end='conv1', clip=True, **step_params):
 
     # FYI
     print net.blobs.keys()
@@ -112,11 +112,11 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
     # returning the resulting image
     return deprocess(net, src.data[0])
 
-LENWAV = 10000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
+LENWAV = 20000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
 img = np.zeros((LENWAV, 1, 1), dtype=int)
 
-waveFile = wave.open('../data/piano/splitwav/class1-1a.wav', 'rb')
+waveFile = wave.open('../data/piano/splitwav/other1-10a.wav', 'rb')
 for i in range(0, LENWAV * SAMPLEFACTOR):
     waveData = waveFile.readframes(1)
     if i % SAMPLEFACTOR == 0:
@@ -127,4 +127,4 @@ showarray(img)
 
 output = deepdream(net, img, octave_n=4, iter_n=100)
 
-wavwrite('../output/test.wav', waveFile.getframerate() / SAMPLEFACTOR, output / float(np.max(np.abs(output),axis=0)))
+wavwrite('out.wav', waveFile.getframerate() / SAMPLEFACTOR, output / float(np.max(np.abs(output),axis=0)))
