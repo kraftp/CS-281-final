@@ -27,8 +27,8 @@ def showarray(a, fmt='jpeg'):
 caffe_path = os.path.abspath(os.path.join(os.path.join(os.path.join(caffe.__file__, os.pardir), os.pardir), os.pardir))
 model_path = '.'
 net_fn   = os.path.join(model_path, 'deploy.prototxt')
-param_fn = os.path.join(model_path, '._iter_128.caffemodel')
-tmp_file = 'tmp.prototxt'
+param_fn = os.path.join(model_path, '.iter_10000.caffemodel')
+tmp_file = '../tmp/tmp.prototxt'
 
 # Patching model to be able to compute gradients.
 # Note that you can also manually add "force_backward: true" line to "deploy.prototxt".
@@ -51,7 +51,7 @@ def deprocess(net, img):
 def objective_L2(dst):
     dst.diff[:] = dst.data
 
-def make_step(net, step_size=1.5, end='conv1',
+def make_step(net, step_size=1.5, end='conv3',
               jitter=32, clip=True, objective=objective_L2):
     '''Basic gradient ascent step.'''
 
@@ -59,7 +59,7 @@ def make_step(net, step_size=1.5, end='conv1',
     dst = net.blobs[end]
 
     ox, oy = np.random.randint(-jitter, jitter+1, 2)
-    src.data[0] = np.roll(src.data[0], ox, -1)
+    src.data[0] = np.roll(np.roll(src.data[0], ox, -1), oy, -2) # apply jitter shift
 
     net.forward(end=end)
     objective(dst)  # specify the optimization objective
@@ -69,14 +69,15 @@ def make_step(net, step_size=1.5, end='conv1',
     # apply normalized ascent step to the input image
     src.data[:] += step_size/np.abs(g).mean() * g
 
-    src.data[0] = np.roll(src.data[0], -ox, -1)
+    src.data[0] = np.roll(np.roll(src.data[0], -ox, -1), -oy, -2) # unshift image
 
-    if clip:
-        bias = net.transformer.mean['data']
-        src.data[:] = np.clip(src.data, -bias, 255-bias)
+    # HIDDEN BECAUSE PROBABLY NOT RELEVANT TO MUSIC
+    # if clip:
+    #     bias = net.transformer.mean['data']
+    #     src.data[:] = np.clip(src.data, -bias, 255-bias)
 
 def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
-              end='conv1', clip=True, **step_params):
+              end='conv3', clip=True, **step_params):
 
     # FYI
     print net.blobs.keys()
@@ -101,10 +102,11 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
             make_step(net, end=end, clip=clip, **step_params)
 
             # visualization
+            # HIDDEN BECAUSE PROBABLY NOT RELEVANT TO MUSIC
             vis = deprocess(net, src.data[0])
-            if not clip: # adjust image contrast if clipping is disabled
-                vis = vis*(255.0/np.percentile(vis, 99.98))
-            showarray(vis)
+            # if not clip: # adjust image contrast if clipping is disabled
+            #     vis = vis*(255.0/np.percentile(vis, 99.98))
+            # showarray(vis)
             print octave, i, end, vis.shape
 
         # extract details produced on the current octave
@@ -116,7 +118,7 @@ LENWAV = 20000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
 img = np.zeros((LENWAV, 1, 1), dtype=int)
 
-waveFile = wave.open('../data/piano/splitwav/other1-10a.wav', 'rb')
+waveFile = wave.open('../data/piano/splitwav/other1-7a.wav', 'rb')
 for i in range(0, LENWAV * SAMPLEFACTOR):
     waveData = waveFile.readframes(1)
     if i % SAMPLEFACTOR == 0:
@@ -127,4 +129,4 @@ showarray(img)
 
 output = deepdream(net, img, octave_n=4, iter_n=100)
 
-wavwrite('out.wav', waveFile.getframerate() / SAMPLEFACTOR, output / float(np.max(np.abs(output),axis=0)))
+wavwrite('../output/out.wav', waveFile.getframerate() / SAMPLEFACTOR, output / float(np.max(np.abs(output),axis=0)))
