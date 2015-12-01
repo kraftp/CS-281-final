@@ -118,8 +118,9 @@ LENWAV = 20000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
 img = np.zeros((LENWAV, 1, 1), dtype=int)
 
-waveFile = wave.open('../data/piano/splitwav/other1-7a.wav', 'rb')
+waveFile = wave.open('../data/noise.wav', 'rb')
 for i in range(0, LENWAV * SAMPLEFACTOR):
+    print i
     waveData = waveFile.readframes(1)
     if i % SAMPLEFACTOR == 0:
         sound = struct.unpack("<h", waveData)
