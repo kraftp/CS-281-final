@@ -15,7 +15,7 @@ layer {
       phase: TRAIN
     }
     transform_param {
-      scale: 0.000005
+      scale: 0.00001
     }
 }
 
@@ -33,7 +33,7 @@ layer {
       phase: TEST
     }
     transform_param {
-      scale: 0.000005
+      scale: 0.00001
     }
 }
 layer {
@@ -44,7 +44,7 @@ layer {
   convolution_param {
     num_output: 64
     kernel_w: 1
-    kernel_h: 2000
+    kernel_h: 200
     stride: 1
     weight_filler {
       type: "xavier"

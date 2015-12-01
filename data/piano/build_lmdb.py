@@ -32,7 +32,7 @@ for newFile in np.random.permutation(os.listdir(DIR)):
         if i % SAMPLEFACTOR == 0:
             sound = struct.unpack("<h", waveData)
             data[count,0,i/SAMPLEFACTOR,0] = sound[0]
-    data[count,0,:,0] *= 20000. / np.max(np.abs(data[count,0,:,0]))
+    #data[count,0,:,0] *= 20000. / np.max(np.abs(data[count,0,:,0]))
     count += 1
 # We need to prepare the database for the size. We'll set it 10 times
 # greater than what we theoretically need. There is little drawback to
