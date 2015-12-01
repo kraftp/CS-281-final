@@ -8,7 +8,7 @@ test_interval: 100
 snapshot: 1000
 snapshot_prefix: "."
 
-base_lr: .0001
+base_lr: .01
 momentum: 0.9
 #weight_decay: 0.00005
 
