@@ -118,9 +118,8 @@ LENWAV = 20000 #Must be <= 40000 / SAMPLEFACTOR for one-second wav files
 SAMPLEFACTOR = 4
 img = np.zeros((LENWAV, 1, 1), dtype=int)
 
-waveFile = wave.open('../data/noise.wav', 'rb')
+waveFile = wave.open('../data/piano/splitwav/other1-1a.wav', 'rb')
 for i in range(0, LENWAV * SAMPLEFACTOR):
-    print i
     waveData = waveFile.readframes(1)
     if i % SAMPLEFACTOR == 0:
         sound = struct.unpack("<h", waveData)
@@ -129,5 +128,14 @@ for i in range(0, LENWAV * SAMPLEFACTOR):
 showarray(img)
 
 output = deepdream(net, img, octave_n=4, iter_n=100)
+params = waveFile.getparams()
+waveFile.close()
 
-wavwrite('../output/out.wav', waveFile.getframerate() / SAMPLEFACTOR, output / float(np.max(np.abs(output),axis=0)))
+waveFile = wave.open('out.wav', 'wb')
+waveFile.setparams(params)
+waveFile.setnframes(0)
+waveFile.setframerate(waveFile.getframerate() / SAMPLEFACTOR)
+
+for datum in output.astype(int):
+    waveFile.writeframes(struct.pack("<h", min(32767, max(-32768, datum[0,0]))))
+waveFile.close()
