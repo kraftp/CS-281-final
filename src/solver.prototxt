@@ -6,7 +6,7 @@ test_iter: 20
 test_interval: 100
 
 snapshot: 1000
-snapshot_prefix: "."
+snapshot_prefix: ".bigger_"
 
 base_lr: .01
 momentum: 0.9

@@ -106,12 +106,12 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, octave_scale=1.4,
     # returning the resulting image
     return deprocess(net, src.data[0])
 
-img = np.float32(PIL.Image.open('../data/img/sky.jpg'))
+img = np.float32(PIL.Image.open('../data/img/berg.jpg'))
 showarray(img)
 
-output = deepdream(net, img, octave_n=4, iter_n=40)
+output = deepdream(net, img, octave_n=4, iter_n=20)
 
-output_file = '../output/sky.jpg'
+output_file = '../output/berg.jpg'
 a = np.uint8(np.clip(output, 0, 255))
 img = PIL.Image.fromarray(a)
 with open(output_file, 'wb') as f:
