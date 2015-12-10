@@ -6,7 +6,7 @@ layer {
     top: "label"
     data_param {
       source: "../data/piano_fft_train_lmdb"
-      batch_size: 8
+      batch_size: 64
       backend: LMDB
     }
     include {
@@ -24,7 +24,7 @@ layer {
     top: "label"
     data_param {
       source: "./../data/piano_fft_test_lmdb"
-      batch_size: 16
+      batch_size: 64
       backend: LMDB
     }
     include {
@@ -56,45 +56,9 @@ layer {
   top: "conv1"
 }
 layer {
-  name: "ip1"
-  type: "InnerProduct"
-  bottom: "conv1"
-  top: "ip1"
-  inner_product_param {
-    num_output: 200
-    weight_filler {
-      type: "xavier"
-    }
-  }
-}
-layer {
-  name: "relu1"
-  type: "ReLU"
-  bottom: "ip1"
-  top: "ip1"
-}
-layer {
-  name: "ip2"
-  type: "InnerProduct"
-  bottom: "ip1"
-  top: "ip2"
-  inner_product_param {
-    num_output: 200
-    weight_filler {
-      type: "xavier"
-    }
-  }
-}
-layer {
-  name: "relu2"
-  type: "ReLU"
-  bottom: "ip2"
-  top: "ip2"
-}
-layer {
   name: "classes"
   type: "InnerProduct"
-  bottom: "ip2"
+  bottom: "conv1"
   top: "classes"
   inner_product_param {
     num_output: 2

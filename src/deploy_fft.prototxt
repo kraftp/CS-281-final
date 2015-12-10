@@ -1,0 +1,47 @@
+name: "fft"
+input: "data"
+input_shape {
+  dim: 10
+  dim: 1
+  dim: 20000
+  dim: 2
+}
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  convolution_param {
+    num_output: 32
+    kernel_w: 2
+    kernel_h: 1000
+    stride: 1000
+    weight_filler {
+      type: "xavier"
+    }
+  }
+}
+layer {
+  name: "reluc1"
+  type: "ReLU"
+  bottom: "conv1"
+  top: "conv1"
+}
+layer {
+  name: "classes"
+  type: "InnerProduct"
+  bottom: "conv1"
+  top: "classes"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+  }
+}
+layer {
+  name: "prob"
+  type: "Softmax"
+  bottom: "classes"
+  top: "prob"
+}
