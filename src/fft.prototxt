@@ -1,0 +1,119 @@
+name: "fft"
+layer {
+    name: "data"
+    type: "Data"
+    top: "data"
+    top: "label"
+    data_param {
+      source: "../data/piano_fft_train_lmdb"
+      batch_size: 8
+      backend: LMDB
+    }
+    include {
+      phase: TRAIN
+    }
+    transform_param {
+      scale: 0.00001
+    }
+}
+
+layer {
+    name: "data"
+    type: "Data"
+    top: "data"
+    top: "label"
+    data_param {
+      source: "./../data/piano_fft_test_lmdb"
+      batch_size: 16
+      backend: LMDB
+    }
+    include {
+      phase: TEST
+    }
+    transform_param {
+      scale: 0.00001
+    }
+}
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  convolution_param {
+    num_output: 32
+    kernel_w: 2
+    kernel_h: 1000
+    stride: 1000
+    weight_filler {
+      type: "xavier"
+    }
+  }
+}
+layer {
+  name: "reluc1"
+  type: "ReLU"
+  bottom: "conv1"
+  top: "conv1"
+}
+layer {
+  name: "ip1"
+  type: "InnerProduct"
+  bottom: "conv1"
+  top: "ip1"
+  inner_product_param {
+    num_output: 200
+    weight_filler {
+      type: "xavier"
+    }
+  }
+}
+layer {
+  name: "relu1"
+  type: "ReLU"
+  bottom: "ip1"
+  top: "ip1"
+}
+layer {
+  name: "ip2"
+  type: "InnerProduct"
+  bottom: "ip1"
+  top: "ip2"
+  inner_product_param {
+    num_output: 200
+    weight_filler {
+      type: "xavier"
+    }
+  }
+}
+layer {
+  name: "relu2"
+  type: "ReLU"
+  bottom: "ip2"
+  top: "ip2"
+}
+layer {
+  name: "classes"
+  type: "InnerProduct"
+  bottom: "ip2"
+  top: "classes"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+  }
+}
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "classes"
+  bottom: "label"
+  top: "loss"
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "classes"
+  bottom: "label"
+  top: "accuracy"
+}
